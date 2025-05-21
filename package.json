@@ -1,0 +1,41 @@
+{
+  "name": "zenthyr-app",
+  "version": "1.0.0",
+  "description": "React app for zenthyr",
+  "main": "main.js",
+  "scripts": {
+    "build": "tsc && vite build",
+    "dev": "vite",
+    "preview": "vite preview",
+    "lint": "eslint 'src/app/src/**/*.{ts,tsx}'",
+    "lint:fix": "eslint 'src/app/src/**/*.{ts,tsx}' --fix",
+    "format": "prettier --write 'src/app/src/**/*.{ts,tsx,css,md}'"
+  },
+  "dependencies": {
+    "electron": "^28.1.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "@types/react": "^19.1.1",
+    "@types/react-dom": "^19.1.2",
+    "@types/ws": "^8.18.1",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-airbnb-typescript": "^17.1.0",
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^3.5.3",
+    "typescript": "^4.9.5",
+    "vite": "^6.2.6"
+  }
+}
