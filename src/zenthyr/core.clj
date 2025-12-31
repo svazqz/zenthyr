@@ -3,7 +3,6 @@
    [clojure.java.io :as io]
    [clojure.java.shell :refer [sh]]
    [zenthyr.chromium :as chromium]
-   [zenthyr.ipc :refer [initialize-ipc, start-websocket-server]]
    [zenthyr.utils :as utils]
    [main :as main])
   (:gen-class))
@@ -29,7 +28,7 @@
     (future (try
               (println "Starting Vite development server on port" vite-port "...")
               (let [vite-process-builder (ProcessBuilder.
-                                          (into-array ["npx" "vite" "src/app" "--port" (str vite-port)]))
+                                          (into-array String ["npx" "vite" "src/app" "--port" (str vite-port)]))
                     _ (.directory vite-process-builder (.getCanonicalFile project-root))
                     _ (.redirectErrorStream vite-process-builder true)
                     vite-process (.start vite-process-builder)
@@ -54,12 +53,9 @@
   (println "Starting zenthyr application...")
   (ensure-dependencies!) 
   (let [vite-port (start-vite-server)
-        ipc-port (start-websocket-server)
         app (chromium/start-chromium!
-             {:vite-port vite-port
-              :ipc-port ipc-port})]
+             {:vite-port vite-port})]
     ;; Keep the JVM running
-    (initialize-ipc app)
     (.addShutdownHook (Runtime/getRuntime)
                       (Thread. (fn []
                                  (when-let [close-fn (:close app)]

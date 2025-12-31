@@ -12,10 +12,8 @@
     "format": "prettier --write 'src/app/src/**/*.{ts,tsx,css,md}'"
   },
   "dependencies": {
-    "electron": "^28.1.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "ws": "^8.14.2"
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",

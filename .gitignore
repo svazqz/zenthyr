@@ -13,3 +13,6 @@ node_modules
 .snippets
 .clj-kondo
 .DS_Store
+jcef-bundle
+jcef-cache
+.lsp

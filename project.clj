@@ -5,8 +5,10 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [cheshire "5.12.0"]
-                 [org.java-websocket/Java-WebSocket "1.5.4"]
-                 [http-kit "2.6.0"]]  ;; Add this line
+                 [me.friwi/jcefmaven "141.0.10"]]
+  :jvm-opts ["--add-opens=java.desktop/sun.awt=ALL-UNNAMED"
+             "--add-opens=java.desktop/sun.lwawt=ALL-UNNAMED"
+             "--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED"]
   :main ^:skip-aot zenthyr.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
