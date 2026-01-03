@@ -28,13 +28,14 @@ This will:
 1. Install necessary Node.js dependencies
 2. Start the Vite development server
 3. Launch the WebSocket server for IPC
-4. Open the Electron window with your application
+
 ## Development
 The project structure:
 
 - src/zenthyr/ : Core framework components
 - src/app/ : React frontend application
 - src/main.clj : Application logic implementation
+
 ## License
 
 Copyright © 2025
@@ -49,19 +50,3 @@ Public License, v. 2.0 are satisfied: GNU General Public License as published by
 the Free Software Foundation, either version 2 of the License, or (at your
 option) any later version, with the GNU Classpath Exception which is available
 at https://www.gnu.org/software/classpath/license.html.
-
-### Third-Party Licenses
-
-This project includes Electron, which is licensed under the MIT License.
-Copyright (c) Electron contributors
-Copyright (c) 2013-2020 GitHub Inc.
-
-See the [Electron License](https://github.com/electron/electron/blob/main/LICENSE) for more details.
-
-Note: When distributing this application, ensure compliance with Electron's license terms and include appropriate attributions in your distribution.
-
-```plaintext
-
-This updated README provides a clear overview of what zenthyr is, its main features, prerequisites, usage instructions, and development information while maintaining the original license information.
- ```
-```
