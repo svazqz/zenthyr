@@ -116,6 +116,49 @@ This behavior is implemented using `java.awt.Desktop` app event handlers plus Sw
 
 ## Developing Zenthyr (library + template)
 
+### Testing the library locally
+
+Run the unit tests:
+
+```bash
+lein test
+```
+
+Run a single test namespace:
+
+```bash
+lein test zenthyr.utils-test
+```
+
+Run a single test var:
+
+```bash
+lein test :only zenthyr.utils-test/test-find-available-port
+```
+
+Install the current code as a local SNAPSHOT (so other projects can depend on it immediately):
+
+```bash
+lein install
+```
+
+Smoke-test the full dev loop (template → Vite → JCEF) against your local SNAPSHOT:
+
+```bash
+cd template
+lein install
+cd ..
+lein new zenthyr template-smoke-test +react
+cd template-smoke-test
+lein run
+```
+
+If Leiningen appears to keep using a cached SNAPSHOT, force refresh:
+
+```bash
+lein deps :force
+```
+
 ### Library development
 
 From the repo root:
@@ -162,17 +205,7 @@ Zenthyr is meant to be published as:
 - the library artifact (`zenthyr`)
 - the template artifact (`zenthyr/lein-template`)
 
-Typical flow:
-
-- Create a Clojars account and deploy token.
-- Bump versions in [project.clj](file:///Users/sergio/Projects/zenthyr/project.clj) and [template/project.clj](file:///Users/sergio/Projects/zenthyr/template/project.clj).
-- Deploy:
-
-```bash
-lein deploy clojars
-cd template
-lein deploy clojars
-```
+Publishing is done via Clojars by deploying both artifacts from this repository.
 
 ## Contributing
 
