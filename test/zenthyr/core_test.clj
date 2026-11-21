@@ -31,32 +31,50 @@
         (is (not @sh-called))))))
 
 (deftest test-start-vite-server
-  (testing "Starts vite server on available port"
-    (let [port (atom nil)]
-      (with-redefs [utils/find-available-port (fn [p] 
-                                                (reset! port p) 
-                                                12345)
-                    clojure.core/future-call (fn [f] nil)]
-        (is (= 12345 (start-vite-server)))
-        (is (= 5173 @port))))))
+  (testing "Starts the frontend process with the selected port"
+    (let [root (.toFile (java.nio.file.Files/createTempDirectory
+                         "zenthyr-vite-test" (make-array java.nio.file.attribute.FileAttribute 0)))
+          port-hint (atom nil)]
+      (try
+        (spit (io/file root "package.json")
+              "{\"scripts\":{\"dev\":\"node -e \\\"process.exit(process.argv.slice(1).join(' ') === '--port 12345' ? 0 : 1)\\\" --\"}}")
+        (with-redefs [io/file (fn [& _] root)
+                      utils/find-available-port (fn [hint] (reset! port-hint hint) 12345)
+                      clojure.core/future-call (constantly nil)]
+          (let [{:keys [port process]} (start-vite-server)]
+            (try
+              (is (= 12345 port))
+              (is (= 5173 @port-hint))
+              (is (.waitFor process 10 java.util.concurrent.TimeUnit/SECONDS))
+              (when-not (.isAlive process)
+                (is (zero? (.exitValue process))))
+              (finally
+                (.destroyForcibly process)))))
+        (finally
+          (doseq [entry (reverse (file-seq root))]
+            (io/delete-file entry true)))))))
 
-(deftest test-main-flow
-  (testing "Main entry point orchestrates startup"
-    (let [ensure-deps-called (atom false)
-          start-vite-called (atom false)
-          start-chromium-called (atom false)
-          shutdown-hook-added (atom false)]
-      (with-redefs [ensure-dependencies! (fn [] (reset! ensure-deps-called true))
-                    start-vite-server (fn [] (reset! start-vite-called true) 8080)
-                    chromium/start-chromium! (fn [opts] 
-                                               (reset! start-chromium-called true)
-                                               (is (= 8080 (:vite-port opts)))
-                                               {:close (fn [] :closed)})
-                    utils/suppress-stderr-logging! (fn [])
-                    utils/add-shutdown-hook! (fn [f]
-                                               (reset! shutdown-hook-added true))]
-        (-main)
-        (is @ensure-deps-called)
-        (is @start-vite-called)
-        (is @start-chromium-called)
-        (is @shutdown-hook-added)))))
+(deftest test-start-app
+  (testing "Starts the frontend and browser and registers cleanup"
+    (let [calls (atom [])
+          hook (atom nil)
+          original-handler (Thread/getDefaultUncaughtExceptionHandler)
+          original-edt-handler (System/getProperty "sun.awt.exception.handler")]
+      (try
+        (with-redefs [ensure-dependencies! #(swap! calls conj :dependencies)
+                      start-vite-server (fn [] (swap! calls conj :vite) {:port 8080 :process nil})
+                      chromium/start-chromium! (fn [options]
+                                                 (swap! calls conj options)
+                                                 {:close #(swap! calls conj :closed)})
+                      utils/suppress-stderr-logging! (fn [])
+                      utils/add-shutdown-hook! #(reset! hook %)]
+          (start-app! {})
+          (is (= [:dependencies :vite {:vite-port 8080 :handler nil}] @calls))
+          (when (is (fn? @hook))
+            (@hook)
+            (is (= :closed (last @calls)))))
+        (finally
+          (Thread/setDefaultUncaughtExceptionHandler original-handler)
+          (if original-edt-handler
+            (System/setProperty "sun.awt.exception.handler" original-edt-handler)
+            (System/clearProperty "sun.awt.exception.handler")))))))
