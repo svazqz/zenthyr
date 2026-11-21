@@ -2,6 +2,8 @@
 
 An alpha desktop application library and Leiningen template. A Clojure JVM backend hosts a Chromium window, while React, Vue, Svelte, or Angular can provide the interface.
 
+[![Validation](https://github.com/svazqz/zenthyr/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/svazqz/zenthyr/actions/workflows/ci.yml)
+
 [Quick start](#quick-start) · [Validation](#validation) · [Project layout](#project-layout) · [Reference](#reference) · [License](#license)
 
 ## Quick start
