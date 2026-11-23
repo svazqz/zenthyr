@@ -13,4 +13,4 @@ COPY project.clj ./
 RUN lein deps
 COPY src src
 COPY test test
-CMD ["xvfb-run", "-a", "lein", "-o", "test"]
+CMD ["timeout", "120", "xvfb-run", "-a", "lein", "-o", "test"]
