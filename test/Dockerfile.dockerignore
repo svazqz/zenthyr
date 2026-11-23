@@ -1,0 +1,6 @@
+**
+!project.clj
+!src
+!src/**
+!test
+!test/**
