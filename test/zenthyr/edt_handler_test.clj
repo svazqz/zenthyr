@@ -31,3 +31,15 @@
         
         (finally
           (System/setErr original-err))))))
+
+(deftest routes-unhandled-errors-through-the-current-handler
+  (let [original System/err
+        saved (java.io.ByteArrayOutputStream.)]
+    (try
+      (System/setErr (java.io.PrintStream. saved))
+      (-uncaughtException nil (Thread/currentThread) (Exception. "Signature validation"))
+      (is (= "" (.toString saved "UTF-8")))
+      (-uncaughtException nil (Thread/currentThread) (Exception. "fixture failure"))
+      (is (re-find #"fixture failure" (.toString saved "UTF-8")))
+      (finally
+        (System/setErr original)))))

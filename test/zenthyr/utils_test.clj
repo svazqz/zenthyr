@@ -44,3 +44,18 @@
         
         (finally
           (System/setErr original-err))))))
+
+(deftest preserves-partial-output-and-writes-byte-ranges
+  (let [original System/err
+        saved (ByteArrayOutputStream.)]
+    (try
+      (System/setErr (PrintStream. saved))
+      (suppress-stderr-logging!)
+      (.write System/err (.getBytes "first" "UTF-8"))
+      (.write System/err (int \space))
+      (is (= "" (.toString saved "UTF-8")))
+      (let [second (.getBytes "xline\nsecond\n" "UTF-8")]
+        (.write System/err second 1 (dec (alength second))))
+      (is (= "first line\nsecond\n" (.toString saved "UTF-8")))
+      (finally
+        (System/setErr original)))))

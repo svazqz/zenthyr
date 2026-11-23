@@ -10,20 +10,20 @@
            [java.awt.desktop AppReopenedListener QuitHandler]
            [java.awt.event WindowAdapter WindowEvent]))
 
+(defn- message-handler [handler]
+  (proxy [CefMessageRouterHandlerAdapter] []
+    (onQuery [^CefBrowser browser ^CefFrame frame query-id ^String request persistent ^CefQueryCallback callback]
+      (try
+        (let [message (json/parse-string request true)
+              response (handler message)]
+          (.success callback (json/generate-string response)))
+        (catch Exception e
+          (.failure callback 500 (.getMessage e))))
+      true)))
+
 (defn create-message-router [handler]
   (let [router (CefMessageRouter/create)]
-    (.addHandler router
-                 (proxy [CefMessageRouterHandlerAdapter] []
-                   (onQuery [^CefBrowser browser ^CefFrame frame query-id ^String request persistent ^CefQueryCallback callback]
-                     (try
-                       (let [message (json/parse-string request true)
-                             response (handler message)]
-                         (.success callback (json/generate-string response))
-                         true)
-                       (catch Exception e
-                         (.failure callback 500 (.getMessage e))
-                         true))))
-                 true)
+    (.addHandler router (message-handler handler) true)
     router))
 
 (defn start-chromium!
