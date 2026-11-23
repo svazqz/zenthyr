@@ -16,20 +16,13 @@ jobs:
   validate:
     name: "Clojure library tests"
     runs-on: "ubuntu-24.04"
-    timeout-minutes: 15
+    timeout-minutes: 22
     steps:
       - name: "Check out source"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - name: "Set up Java"
-        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6
-        with:
-          distribution: "temurin"
-          java-version: "17"
-      - name: "Install Leiningen"
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends leiningen xvfb xauth
-      - name: "Run Clojure tests"
-        run: "xvfb-run -a lein test"
+      - name: "Build the test image"
+        run: "docker build -f test/Dockerfile -t zenthyr-tests ."
+      - name: "Run Leiningen tests in a virtual display"
+        run: "docker run --rm --init --network none zenthyr-tests"

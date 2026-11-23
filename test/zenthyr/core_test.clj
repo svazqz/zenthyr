@@ -78,3 +78,41 @@
           (if original-edt-handler
             (System/setProperty "sun.awt.exception.handler" original-edt-handler)
             (System/clearProperty "sun.awt.exception.handler")))))))
+
+(deftest test-installation-failure-preserves-the-message
+  (with-redefs [io/file (fn [& _]
+                        (proxy [java.io.File] ["."]
+                          (exists [] false)
+                          (getPath [] ".")))
+                sh (constantly {:exit 1 :err "fixture failure"})]
+    (let [failure (try
+                    (ensure-dependencies!)
+                    nil
+                    (catch clojure.lang.ExceptionInfo e e))]
+      (is (some? failure))
+      (is (= {:error "fixture failure"} (ex-data failure))))))
+
+(deftest test-existing-vite-server-is-used-and-shutdown-failures-are-contained
+  (let [hook (atom nil)
+        browser-options (atom nil)
+        handler (fn [_] :response)
+        original-handler (Thread/getDefaultUncaughtExceptionHandler)
+        original-edt-handler (System/getProperty "sun.awt.exception.handler")]
+    (try
+      (with-redefs [ensure-dependencies! (constantly nil)
+                    start-vite-server (fn [] (throw (ex-info "unexpected Vite launch" {})))
+                    chromium/start-chromium! (fn [options]
+                                               (reset! browser-options options)
+                                               {:close #(throw (ex-info "fixture close error" {}))})
+                    utils/suppress-stderr-logging! (constantly nil)
+                    utils/add-shutdown-hook! #(reset! hook %)]
+        (start-app! {:vite-port 8123 :handler handler})
+        (is (= {:vite-port 8123 :handler handler} @browser-options))
+        (is (fn? @hook))
+        (is (re-find #"Error during shutdown: fixture close error"
+                     (with-out-str (@hook)))))
+      (finally
+        (Thread/setDefaultUncaughtExceptionHandler original-handler)
+        (if original-edt-handler
+          (System/setProperty "sun.awt.exception.handler" original-edt-handler)
+          (System/clearProperty "sun.awt.exception.handler"))))))
