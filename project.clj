@@ -12,7 +12,10 @@
              "--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED"
              "--enable-native-access=ALL-UNNAMED"]
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all
+  :profiles {:coverage {:plugins [[lein-cloverage "1.2.2"]]}
+             :native-amd64 {:dependencies [[me.friwi/jcef-natives-linux-amd64 "jcef-2caef5a+cef-141.0.10+g1d65b0d+chromium-141.0.7390.123"]]}
+             :native-arm64 {:dependencies [[me.friwi/jcef-natives-linux-arm64 "jcef-2caef5a+cef-141.0.10+g1d65b0d+chromium-141.0.7390.123"]]}
+             :uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}
              :dev {:resource-paths ["resources"]}}
   :repl-options {:init-ns zenthyr.core})

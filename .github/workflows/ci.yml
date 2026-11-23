@@ -25,4 +25,4 @@ jobs:
       - name: "Build the test image"
         run: "docker build -f test/Dockerfile -t zenthyr-tests ."
       - name: "Run Leiningen tests in a virtual display"
-        run: "docker run --rm --init --network none zenthyr-tests"
+        run: "docker run --rm --init --network none --shm-size=1g zenthyr-tests"

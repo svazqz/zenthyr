@@ -40,7 +40,7 @@
               "{\"scripts\":{\"dev\":\"node -e \\\"process.exit(process.argv.slice(1).join(' ') === '--port 12345' ? 0 : 1)\\\" --\"}}")
         (with-redefs [io/file (fn [& _] root)
                       utils/find-available-port (fn [hint] (reset! port-hint hint) 12345)
-                      clojure.core/future-call (constantly nil)]
+                      clojure.core/future-call (fn [consume] (consume))]
           (let [{:keys [port process]} (start-vite-server)]
             (try
               (is (= 12345 port))
@@ -111,6 +111,31 @@
         (is (fn? @hook))
         (is (re-find #"Error during shutdown: fixture close error"
                      (with-out-str (@hook)))))
+      (finally
+        (Thread/setDefaultUncaughtExceptionHandler original-handler)
+        (if original-edt-handler
+          (System/setProperty "sun.awt.exception.handler" original-edt-handler)
+          (System/clearProperty "sun.awt.exception.handler"))))))
+
+(deftest shutdown-stops-a-frontend-process-that-does-not-exit-gracefully
+  (let [events (atom [])
+        hook (atom nil)
+        original-handler (Thread/getDefaultUncaughtExceptionHandler)
+        original-edt-handler (System/getProperty "sun.awt.exception.handler")
+        fixture (proxy [Process] []
+                  (destroy [] (swap! events conj :terminate))
+                  (isAlive [] true)
+                  (destroyForcibly [] (swap! events conj :force) nil))]
+    (try
+      (with-redefs [ensure-dependencies! (constantly nil)
+                    start-vite-server (constantly {:port 8123 :process fixture})
+                    chromium/start-chromium! (constantly {:close #(swap! events conj :browser-close)})
+                    utils/suppress-stderr-logging! (constantly nil)
+                    utils/add-shutdown-hook! #(reset! hook %)]
+        (start-app! {})
+        (when (is (fn? @hook))
+          (@hook)
+          (is (= [:terminate :force :browser-close] @events))))
       (finally
         (Thread/setDefaultUncaughtExceptionHandler original-handler)
         (if original-edt-handler
